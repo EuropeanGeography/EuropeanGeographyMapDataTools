@@ -1,7 +1,19 @@
+import threading
+from multiprocessing.pool import ThreadPool as Pool
+
 from Country import Country
 from Node import Node
 from Polygon import Polygon
 from PolygonGroup import PolygonGroup
+
+try:
+    from country_bounding_boxes import (
+        country_subunits_containing_point,
+        country_subunits_by_iso_code
+    )
+except ImportError:  # ignore
+    print("Error importing country_bounding_boxes, is this package installed?")
+
 
 try:
     from lxml import ET
@@ -79,7 +91,7 @@ class OMSParser:
             node = self.translate_node_tag_to_object(tag)
             if not self.is_node_in_cache(node.id):
                 self.__nodes[node.id] = node
-            if node.id == node_id:
+            if int(node.id) == int(node_id):
                 return node
         raise NameError('Node tag with id ' + str(node_id) + ' not found!')
 
@@ -106,7 +118,7 @@ class OMSParser:
         :param relation_node: whole relation node which contains all ways and node links
         :return: Country object containing all tags from relation and polygons (parsed ways).
         """
-        polygons = PolygonGroup()  # todo missing bounding box
+        polygons = PolygonGroup()
         for referencing in relation_node.findall('member'):
             node_type = referencing.get('type')
             if node_type == 'way':
@@ -117,6 +129,7 @@ class OMSParser:
         country = Country()
         country.from_node(relation_node)  # extracts tag nodes
         country.assign_polygons(polygons)
+        polygons.bounding_boxes = [c.bbox for c in country_subunits_by_iso_code(country.iso2)]
         return country
 
     def parse_way_node(self, way_node, referencing_type='member'):
@@ -137,15 +150,31 @@ class OMSParser:
         country = Country()
         country.from_node(way_node)  # extracts tag nodes
         country.assign_polygons([polygon])
-        return country
+        self.append_country(country)
 
     def create_country_from_relation(self, relation_node):
-        return self.parse_relation(relation_node)
+        self.append_country(self.parse_relation(relation_node))
+
+    def append_country(self, country):
+        self.countries.append(country)
 
     def parse(self):
+
+        pool_size = 10  # your "parallelness"
+        pool = Pool(pool_size)
+
         for node in self.__root.findall('relation'):
-            self.countries.append(self.create_country_from_relation(node))
+            print('processing ' + str(node))
+            pool.apply_async(self.create_country_from_relation, (node,))
+            # self.countries.append(self.create_country_from_relation(node))
+
         for node in self.__root.findall('way'):
+            print('processing ' + str(node))
             if not self.is_way_in_cache(node.get('id')):
-                self.countries.append(self.create_country_from_way(node))
+                pool.apply_async(self.countries.append(self.create_country_from_way(node)))
+        print('closing')
+        pool.close()
+        print('closed')
+        pool.join()
+        print('joined')
         return self.countries

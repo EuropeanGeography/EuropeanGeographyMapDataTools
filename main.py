@@ -9,9 +9,11 @@ def main(file_name):
     parser = OMSParser(file_name)
     countries = parser.parse()
     for country in countries:
-        output = open(country.iso2 + '.json', 'w')
-        output.write(jsonpickle.encode(country))
-        output.close()
+        print('processing ' + str(country))
+        if country.iso2 is not None:
+            output = open('output/' + country.iso2 + '.json', 'w')
+            output.write(jsonpickle.encode(country))
+            output.close()
 
 if __name__ == '__main__':
     try:

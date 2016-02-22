@@ -2,11 +2,11 @@ import json
 
 
 class PolygonGroup:
-    bounding_box = None
+    bounding_boxes = None
     polygons = []
 
-    def __init__(self, bounding_box):
-        self.bounding_box = bounding_box
+    def __init__(self):
+        pass
 
     def add_polygon(self, polygon):
         self.polygons.append(polygon)
