@@ -2,6 +2,7 @@ import json
 
 
 class Polygon:
+
     points = []
 
     def __init__(self):
