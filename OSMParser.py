@@ -106,7 +106,7 @@ class OMSParser:
         :param relation_node: whole relation node which contains all ways and node links
         :return: Country object containing all tags from relation and polygons (parsed ways).
         """
-        polygons = PolygonGroup()
+        polygons = PolygonGroup()  # todo missing bounding box
         for referencing in relation_node.findall('member'):
             node_type = referencing.get('type')
             if node_type == 'way':
