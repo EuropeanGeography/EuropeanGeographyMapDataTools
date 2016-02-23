@@ -31,8 +31,8 @@ class Relation(_Element):
         self.relation_id = relation_tag.get('id')
         for member_tag in relation_tag.findall('member'):
             self.members.append(Member(member_tag))
-        for tag_tag in relation_tag.findall('tag'):
-            self.members.append(Tag(tag_tag))
+        for element in relation_tag.findall('tag'):
+            self.tags.append(Tag(element))
 
     def is_representing_country(self):
         return len(self.tags) > 0
@@ -72,10 +72,10 @@ class Node(_Element):
         self.node_id = node_tag.get('id')
 
     def to_dict(self):
-        return {'latitude': self.latitude, 'longitude': self.longitude}
+        return {'lat': self.latitude, 'lon': self.longitude}
 
     def to_str(self):
-        return str({'id': self.node_id, 'latitude': self.latitude, 'longitude': self.longitude})
+        return str({'id': self.node_id, 'lat': self.latitude, 'lon': self.longitude})
 
 
 class Way(_Element):
@@ -88,7 +88,7 @@ class Way(_Element):
     def _parse_node(self, node):
         self.way_id = node.get('id')
         for element in node.findall('nd'):
-            self.get_nds().append(Nd(element))
+            self.nds.append(Nd(element))
         for element in node.findall('tag'):
             self.tags.append(Tag(element))
 
@@ -97,12 +97,6 @@ class Way(_Element):
 
     def to_str(self):
         return {'id': self.way_id, 'tag_count': len(self.tags)}
-
-    def get_nds(self):
-        return self.nds
-
-    def get_tags(self):
-        return self.get_tags()
 
 
 class Nd(_Element):

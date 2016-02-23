@@ -1,3 +1,5 @@
+import os
+
 import elements
 import xml.etree.ElementTree as ElementTree
 
@@ -35,11 +37,11 @@ class Parser:
 
     def __extract_country(self, source, source_type):
         if source.is_representing_country():
-            print('extracting {0} with id={1} and tags={2}'.format(str(source), source.way_id, source.tags[1].value))
+            # print('extracting {0} with id={1} and tags={2}'.format(str(source), source.way_id, source.tags[1].value))
             if source_type == 'way':
                 nodes = []
                 tags = {}
-                for nd in source.get_nds():
+                for nd in source.nds:
                     nodes.append(self.nodes[nd.ref].to_dict())
                 for tag in source.tags:
                     tags[tag.key] = tag.value
@@ -59,19 +61,23 @@ class Parser:
             if member.type == elements.ReferencingType.node:
                 nodes.append(self.nodes[member.ref].to_dict())
             elif member.type == elements.ReferencingType.way:
-                way_nodes = []
-                ways.append(self.nodes[member.ref])
-                for nd in ways[member.ref].nds:
-                    way_nodes.append(self.nodes[nd.ref].to_dict())
-                polygons.append(way_nodes)
+                referenced_way = self.ways[str(member.ref)]
+                nodes_of_referenced_way = []
+                ways.append(referenced_way)
+                for nd in referenced_way.nds:
+                    nodes_of_referenced_way.append(self.nodes[nd.ref].to_dict())
+                polygons.append(nodes_of_referenced_way)
         for tag in source.tags:
             tags[tag.key] = tag.value
         print('extracted {0} relation'.format(source))
         return Country(polygons=polygons, tags=tags)
 
     def __write_country_to_file(self, source, source_type):
+        path = 'output/'
         country = self.__extract_country(source, source_type)
-        output = open('output/' + country.iso2 + '.json', 'w')
+        if not os.path.exists(path):
+            os.mkdir(path)
+        output = open(path + country.iso2 + '.json', 'w')
         output.write(country.to_json())
         output.close()
         print('wrote {0} country with tags {1}'.format(country.name, country.tags))

@@ -27,6 +27,6 @@ class Country:
 
     def to_json(self):
         wrapper = copy.deepcopy(self.tags)
-        wrapper['bounding-boxed'] = [c.bbox for c in country_subunits_by_iso_code(self.iso2)]
+        wrapper['bounding-boxes'] = [c.bbox for c in country_subunits_by_iso_code(self.iso2)]
         wrapper['polygons'] = self.polygons
         return json.dumps(wrapper)
