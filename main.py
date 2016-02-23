@@ -1,19 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
-
-from OSMParser import OMSParser
-import jsonpickle
+import parser
 
 
 def main(file_name):
-    parser = OMSParser(file_name)
-    countries = parser.parse()
-    for country in countries:
-        print('processing ' + str(country))
-        if country.iso2 is not None:
-            output = open('output/' + country.iso2 + '.json', 'w')
-            output.write(jsonpickle.encode(country))
-            output.close()
+    parser.Parser(file_name)
+
 
 if __name__ == '__main__':
     try:

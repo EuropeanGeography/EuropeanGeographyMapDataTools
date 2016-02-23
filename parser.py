@@ -22,6 +22,7 @@ class Parser:
     def __load_to_memory(self):
         for element in self.__root.iter():
             if element.tag == 'relation':
+                print("Found element '{0}'!".format(element))
                 relation = elements.Relation(element)
                 self.relations[relation.relation_id] = relation
             elif element.tag == 'node':
@@ -30,33 +31,58 @@ class Parser:
             elif element.tag == 'way':
                 way = elements.Way(element)
                 self.ways[way.way_id] = way
+                print('Found way {0}'.format(way.to_str()))
 
     def __extract_country(self, source, source_type):
-        if source_type == 'way':
-            nodes = []
-            tags = {}
-            for nd in source.nds:
-                nodes.append(self.nodes[nd.ref])
-            for tag in source.tags:
-                tags[tag.key] = tag.value
-            return Country(polygons=[nodes], tags=source.tags)
-        elif source_type == 'relation':
-            return self.__extract_from_relation(source)
-
+        if source.is_representing_country():
+            print('extracting {0} with id={1} and tags={2}'.format(str(source), source.way_id, source.tags[1].value))
+            if source_type == 'way':
+                nodes = []
+                tags = {}
+                for nd in source.get_nds():
+                    nodes.append(self.nodes[nd.ref].to_dict())
+                for tag in source.tags:
+                    tags[tag.key] = tag.value
+                print('obtained tags ' + str(tags))
+                return Country(polygons=[nodes], tags=tags)
+            elif source_type == 'relation':
+                return self.__extract_from_relation(source)
+        raise ValueError('Source {0} is not representing country!'.format(source))
 
     def __extract_from_relation(self, source):
-
+        print('extracting {0} relation'.format(source))
+        nodes = []
+        ways = []
+        tags = {}
+        polygons = []
+        for member in source.members:
+            if member.type == elements.ReferencingType.node:
+                nodes.append(self.nodes[member.ref].to_dict())
+            elif member.type == elements.ReferencingType.way:
+                way_nodes = []
+                ways.append(self.nodes[member.ref])
+                for nd in ways[member.ref].nds:
+                    way_nodes.append(self.nodes[nd.ref].to_dict())
+                polygons.append(way_nodes)
+        for tag in source.tags:
+            tags[tag.key] = tag.value
+        print('extracted {0} relation'.format(source))
+        return Country(polygons=polygons, tags=tags)
 
     def __write_country_to_file(self, source, source_type):
         country = self.__extract_country(source, source_type)
         output = open('output/' + country.iso2 + '.json', 'w')
-        output.write(country.to_JSON())
+        output.write(country.to_json())
         output.close()
+        print('wrote {0} country with tags {1}'.format(country.name, country.tags))
 
     def __process_tags(self):
-        for relation in self.relations:
+        for relation in self.relations.values():
+            print('processing {0} relation'.format(relation))
             if relation.is_representing_country():
+                print('Representing country {0} relation'.format(relation))
                 self.__write_country_to_file(source=relation, source_type='relation')
-        for way in self.ways:
+        for way in self.ways.values():
             if way.is_representing_country():
+                print('processing {0} with id={1} and tags={2}'.format(str(way), way.way_id, way.tags[1].value))
                 self.__write_country_to_file(source=way, source_type='way')
