@@ -1,20 +1,15 @@
 class Country:
 
-    iso2 = None
     name = None
+    iso2 = None
     tags = {}
-    polygons = None
+    polygons = []
 
-    def __init__(self):
-        pass
-
-    def from_node(self, node):
-        tag_nodes = node.findall('tag')
-        for tag_node in tag_nodes:
-            self.tags[tag_node.get('k')] = tag_node.get('v')
+    def __init__(self, polygons, tags):
+        self.polygons = polygons
+        self.tags = tags
         self.name = self.tags['name']
         self.iso2 = self.tags['ISO3166-1:alpha2']
-        return self.tags
 
     def assign_polygons(self, polygons):
         self.polygons = polygons
