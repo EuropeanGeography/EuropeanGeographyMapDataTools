@@ -48,10 +48,10 @@ class Country:
         polygons = []
         for member in source.members:
             # type of referenced element is node
-            if member.type == elements.ReferencingType.node:
+            if member.type == elements.ReferencedType.node:
                 referenced_nodes.append(nodes[member.ref].to_dict())
             # type of referenced element is way
-            elif member.type == elements.ReferencingType.way:
+            elif member.type == elements.ReferencedType.way:
                 referenced_way = ways[str(member.ref)]
                 nodes_of_referenced_way = []
                 for nd in referenced_way.nds:  # nd is element referencing to nodes

@@ -15,7 +15,7 @@ class _Element:
         return False
 
 
-class ReferencingType(Enum):
+class ReferencedType(Enum):
     way = 'way'
     node = 'node'
 
@@ -49,10 +49,10 @@ class Member(_Element):
     def _parse_node(self, member_tag):
         self.ref = int(member_tag.get('ref'))
         referencing_type = member_tag.get('type')
-        if referencing_type == ReferencingType.way.value:
-            self.type = ReferencingType.way
-        elif referencing_type == ReferencingType.node.value:
-            self.type = ReferencingType.node
+        if referencing_type == ReferencedType.way.value:
+            self.type = ReferencedType.way
+        elif referencing_type == ReferencedType.node.value:
+            self.type = ReferencedType.node
         else:
             raise NameError('Unrecognized type: {0}!'.format(referencing_type))
 
