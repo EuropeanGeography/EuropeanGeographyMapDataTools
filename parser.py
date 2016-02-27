@@ -46,9 +46,6 @@ class Parser:
         country = self.__extract_country(source, source_type)
         if not os.path.exists(path):
             os.mkdir(path)
-        else:  # remove previously created files
-            os.remove(path)
-            os.mkdir(path)
         output = open(path + country.iso2.lower() + '.json', 'w')
         output.write(country.to_json())
         output.close()
