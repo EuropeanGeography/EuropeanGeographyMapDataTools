@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from enum import Enum
 
 
@@ -67,9 +69,12 @@ class Tag(_Element):
 class Node(_Element):
 
     def _parse_node(self, node_tag):
-        self.latitude = node_tag.get('lat')
-        self.longitude = node_tag.get('lon')
+        self.latitude = float(node_tag.get('lat'))
+        self.longitude = float(node_tag.get('lon'))
         self.node_id = node_tag.get('id')
+
+    def to_list(self):
+        return [self.latitude, self.longitude]
 
     def to_dict(self):
         return {'lat': self.latitude, 'lon': self.longitude}
