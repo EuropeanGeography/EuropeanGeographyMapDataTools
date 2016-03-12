@@ -55,13 +55,13 @@ class Parser:
         output.write(country.to_json())
         output.close()
 
-        geojsonpath = 'data/'
-        if not os.path.exists(geojsonpath):
-            os.mkdir(geojsonpath)
-        output = open(geojsonpath + country.iso2.lower() + '.geo.json', 'w')
-        output.write(country.to_geojson())
-        output.close()
-
+        if country.tags['is_in:continent'] == 'Europe':
+            geojsonpath = 'data/'
+            if not os.path.exists(geojsonpath):
+                os.mkdir(geojsonpath)
+            output = open(geojsonpath + country.iso2.lower() + '.geo.json', 'w')
+            output.write(country.to_geojson())
+            output.close()
 
     def __process_tags(self):
         for relation in self.relations.values():

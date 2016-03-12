@@ -1,6 +1,6 @@
 import json
 import copy
-from geojson import FeatureCollection, MultiPolygon
+from geojson import FeatureCollection, MultiPolygon, Polygon, Feature
 import geojson
 
 import hooks
@@ -31,7 +31,7 @@ class Country:
         wrapper = copy.deepcopy(self.tags)
         wrapper['bounding-boxes'] = [c.bbox for c in country_subunits_by_iso_code(self.iso2)]
         wrapper['polygons'] = self.polygons
-        wrapper.update(hooks.get_additional_tags())
+        wrapper.update(hooks.get_additional_tags(self))
         return json.dumps(wrapper)
 
     @staticmethod
@@ -84,7 +84,8 @@ class Country:
     def to_geojson(self):
         wrapper = copy.deepcopy(self.tags)
         wrapper['bounding-boxes'] = [c.bbox for c in country_subunits_by_iso_code(self.iso2)]
-        wrapper.update(hooks.get_additional_tags())
+        wrapper.update(hooks.get_additional_tags(self))
 
-        main_data = MultiPolygon(self.polygons, properties=wrapper)
-        return geojson.dumps(FeatureCollection([main_data]), sort_keys=True)
+        main_data = MultiPolygon(self.polygons)
+        feature = Feature(geometry=main_data, properties=wrapper)
+        return geojson.dumps(FeatureCollection([feature]), sort_keys=True)
