@@ -1,6 +1,7 @@
 import os
 
 import elements
+import hooks
 import xml.etree.ElementTree as ElementTree
 
 from country import Country
@@ -41,9 +42,13 @@ class Parser:
                 return Country.extract_from_relation(source=source, nodes=self.nodes, ways=self.ways)
         raise ValueError('Source {0} is not representing country!'.format(source))
 
-    def __write_country_to_file(self, source, source_type):
-        path = 'output/'
+    def __process_source(self, source, source_type):
         country = self.__extract_country(source, source_type)
+        self.__write_country_to_file(country=country)
+        hooks.process_country(country=country)
+
+    def __write_country_to_file(self, country):
+        path = 'output/'
         if not os.path.exists(path):
             os.mkdir(path)
         output = open(path + country.iso2.lower() + '.json', 'w')
@@ -53,7 +58,7 @@ class Parser:
     def __process_tags(self):
         for relation in self.relations.values():
             if relation.is_representing_country():
-                self.__write_country_to_file(source=relation, source_type='relation')
+                self.__process_source(source=relation, source_type='relation')
         for way in self.ways.values():
             if way.is_representing_country():
-                self.__write_country_to_file(source=way, source_type='way')
+                self.__process_source(source=way, source_type='way')
