@@ -25,7 +25,31 @@ def __load_data_to_cache():
     for country in countries:
         tags = {}
         for tag in copy_tags:
-            tags[tag] = country[tag]
+            if tag == 'borders':  # Another Kosovo workaround, ioc code to iso code
+                borders = []
+                for ccode in country[tag]:
+                    if ccode == 'KOS':
+                        borders.append('XXK')
+                    else:
+                        borders.append(ccode)
+                tags[tag] = borders
+            elif tag == 'languages':
+                languages = dict(country[tag])
+                if 'bar' in languages:  # patch for bavarian german, which is unrecognized
+                    del languages['bar']
+                    languages['deu'] = 'German'
+                elif 'gsw' in languages:  # patch for swiss german, which is unrecognized
+                    del languages['gsw']
+                    languages['deu'] = 'German'
+                elif 'nrf' in languages:  # Some unrecognized language...
+                    del languages['nrf']
+                elif 'nfr' in languages:  # Some unrecognized language...
+                    del languages['nfr']
+                elif 'smi' in languages:  # Some unrecognized language...
+                    del languages['smi']
+                tags[tag] = languages
+            else:
+                tags[tag] = country[tag]
         data_cache[country['cca2']] = tags
 
 
@@ -48,5 +72,5 @@ def alter_tags(tags):
     if tags['ISO3166-1:alpha2'] == '-99' and tags['name'] == 'Kosovo':
         print('Found Kosovo, altering ISO 3166-1 tags...')
         tags['ISO3166-1:alpha2'] = 'XK'
-        tags['ISO3166-1:alpha3'] = 'UNK'
+        tags['ISO3166-1:alpha3'] = 'XXK'
     return tags
