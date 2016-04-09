@@ -2,21 +2,11 @@ import json
 
 
 def process_country(country):
-    locales_file = open("locales.xml", 'ab')
-    locales_file.write(
-        bytes('<string name=\"{0}_name\">{1}</string>\n'.format(country.iso2.lower(), country.name), 'utf-8'))
-    locales_file.write(
-        bytes('<string name=\"{0}_currency\">{1}</string>\n'.format(country.iso2.lower(), __find_currency_name()),
-              'utf-8'))
-    locales_file.close()
-
-
-def __find_currency_name():
     pass
 
 
 data_cache = {}
-copy_tags = ['languages', 'currency', 'area', 'borders']
+copy_tags = ['languages', 'currency', 'area', 'borders', 'capital', 'latlng']
 
 
 def __load_data_to_cache():
@@ -25,10 +15,10 @@ def __load_data_to_cache():
     for country in countries:
         tags = {}
         for tag in copy_tags:
-            if tag == 'borders':  # Another Kosovo workaround, ioc code to iso code
+            if tag == 'borders':  # Another Kosovo workaround - ISO code mixup
                 borders = []
                 for ccode in country[tag]:
-                    if ccode == 'KOS':
+                    if ccode == 'UNK':
                         borders.append('XXK')
                     else:
                         borders.append(ccode)
